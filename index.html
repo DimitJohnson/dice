@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b1410">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
+</head>
+<body>
+<title>Ζαριά</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: a tavern table, one phone-width column. Dark wood frame, a felt dice tray at the top,
+   brass for anything you can press, a fixed roll bar at the bottom. Deliberately a single dark look. */
+:root{
+  --wood:#1b1410;
+  --wood-2:#241b15;
+  --wood-3:#2f241c;
+  --line:#47382b;
+  --felt:#1f4234;
+  --felt-deep:#0e2119;
+  --brass:#d6ad5e;
+  --brass-soft:#9c7c43;
+  --brass-ink:#22180d;
+  --ink:#f2e8d5;
+  --muted:#b9a98f;
+  --faint:#85755f;
+  --ok:#93d6aa;
+  --bad:#e2725f;
+  --crit:#f4d06e;
+  --display:"Alegreya SC","Palatino Linotype",Palatino,Georgia,serif;
+  --body:"Alegreya Sans","Segoe UI",Roboto,system-ui,sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html{background:var(--wood)}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.4;
+  background:
+    repeating-linear-gradient(97deg, rgba(255,255,255,.012) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(93deg, rgba(0,0,0,.18) 0 1px, transparent 1px 23px),
+    var(--wood);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:12px calc(112px + env(safe-area-inset-bottom, 0px));
+  -webkit-tap-highlight-color:transparent;
+}
+button,input,output{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.app{max-width:560px;margin:0 auto;display:grid;gap:14px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:4px}
+.brand{display:grid;gap:0;min-width:0}
+.brand-name{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;letter-spacing:.02em;color:var(--brass)}
+.brand-sub{font-size:.82rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.set-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--wood-2);border:1px solid var(--line);border-radius:999px;
+  padding:4px 14px 4px 4px;min-width:0;
+}
+.set-btn canvas{width:36px;height:36px;display:block}
+.set-btn span{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:9.5em}
+.set-btn small{display:block;font-size:.68rem;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;line-height:1}
+
+/* mode tabs */
+.modes{display:grid;grid-template-columns:1fr 1fr;background:var(--wood-2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.modes button{background:none;border:0;border-radius:9px;padding:10px 8px;font-weight:700;color:var(--muted);font-size:.98rem}
+.modes button[aria-selected="true"]{background:var(--brass);color:var(--brass-ink)}
+
+/* tray */
+.tray-wrap{
+  position:relative;
+  border-radius:18px;
+  padding:10px;
+  background:linear-gradient(160deg,#5a4330,#3a2a1d 40%,#2a1e15);
+  box-shadow:0 1px 0 rgba(255,255,255,.08) inset, 0 10px 30px rgba(0,0,0,.45);
+}
+#tray{
+  display:block;width:100%;
+  height:clamp(230px, 64vw, 360px);
+  border-radius:11px;
+  background:var(--felt);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.5), inset 0 8px 24px rgba(0,0,0,.55);
+  touch-action:manipulation;
+}
+.shake-chip{
+  margin:8px 2px 0;
+  font-size:.78rem;letter-spacing:.03em;text-align:center;
+  color:var(--muted);
+}
+.shake-chip.on{color:var(--ok)}
+
+/* result */
+.result{
+  display:grid;justify-items:center;text-align:center;gap:2px;
+  padding:6px 0 2px;min-height:118px;
+}
+.result-label{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.result-num{
+  font-family:var(--display);font-weight:800;
+  font-size:4.2rem;line-height:1;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 0 rgba(0,0,0,.4);
+}
+.result-num.fail{color:var(--bad)}
+.result-tag{min-height:1.3em;font-weight:800;letter-spacing:.04em;font-size:.95rem}
+.result-tag.crit{color:var(--crit)}
+.result-tag.bad{color:var(--bad)}
+.result-tag.good{color:var(--ok)}
+.result-break{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 10px;max-width:100%;font-size:.92rem;color:var(--muted)}
+.grp{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;justify-content:center}
+.grp b{color:var(--ink);font-weight:700;margin-right:2px}
+.pip{
+  min-width:1.9em;padding:1px 6px;border-radius:7px;text-align:center;
+  background:var(--wood-3);border:1px solid var(--line);color:var(--ink);
+  font-variant-numeric:tabular-nums;font-weight:700;font-size:.9rem;
+}
+.pip.s{background:#203d2e;border-color:#3f7a5a;color:var(--ok)}
+.pip.f{opacity:.65}
+.pip.x{text-decoration:line-through;opacity:.45}
+.pip.c{background:#3d3217;border-color:#8a7232;color:var(--crit)}
+.pip.l{background:#3a1d18;border-color:#7c3a2f;color:var(--bad)}
+
+/* panels */
+.panel{
+  background:var(--wood-2);border:1px solid var(--line);border-radius:14px;
+  padding-block:14px;padding-inline:14px;display:grid;gap:14px;
+}
+.panel h3{margin:0;font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--brass);letter-spacing:.03em}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.ghost{background:none;border:0;color:var(--muted);font-size:.88rem;padding:4px 2px;text-decoration:underline;text-underline-offset:3px}
+
+.dice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}
+.die-cell{
+  display:grid;justify-items:center;gap:4px;
+  background:var(--wood);border:1px solid var(--line);border-radius:12px;padding:8px 4px 6px;
+  transition:border-color .15s, background .15s;
+}
+.die-cell.on{border-color:var(--brass-soft);background:#2b2015}
+.die-ico{width:40px;height:40px;display:block;background:none;border:0;padding:0}
+.die-ico canvas{width:40px;height:40px;display:block}
+.die-name{font-weight:800;font-size:.95rem;letter-spacing:.02em}
+.mini-step{display:flex;align-items:center;gap:2px}
+.mini-step button{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--wood-3);line-height:1;padding:0;font-weight:700}
+.mini-step output{min-width:1.5em;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.row > span{font-weight:700}
+.row small{display:block;color:var(--faint);font-weight:400;font-size:.8rem}
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--wood-3);font-size:1.25rem;font-weight:700;line-height:1;padding:0}
+.stepper output{min-width:3.2em;text-align:center;font-weight:800;font-size:1.25rem;font-variant-numeric:tabular-nums}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{
+  border:1px solid var(--line);background:var(--wood-3);border-radius:9px;
+  padding:7px 11px;font-weight:700;font-size:.93rem;color:var(--muted);
+}
+.seg button[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+
+.notation{display:grid;gap:6px}
+.notation span{font-size:.85rem;color:var(--muted)}
+.notation input{
+  background:var(--wood);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  font-size:1.05rem;font-weight:700;letter-spacing:.02em;width:100%;box-sizing:border-box;
+}
+.err{margin:0;color:var(--bad);font-size:.88rem}
+
+.stepper input{
+  width:3.8em;height:40px;box-sizing:border-box;padding:0;
+  text-align:center;font-weight:800;font-size:1.25rem;font-variant-numeric:tabular-nums;
+  background:var(--wood);border:1px solid var(--line);border-radius:10px;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.side-box{display:grid;gap:12px;padding:12px;border-radius:12px;background:var(--wood);border:1px solid var(--line)}
+.side-seg{display:grid;grid-template-columns:1fr 1fr}
+.side-seg button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.set-btn.small{padding:3px 12px 3px 3px;background:var(--wood-2)}
+.set-btn.small canvas{width:30px;height:30px}
+.side-res{flex-basis:100%;display:grid;gap:5px;justify-items:center;padding:8px 0 2px;border-top:1px solid rgba(255,255,255,.07)}
+.side-res > b{color:var(--ink);font-size:1rem}
+.side-res.win > b{color:var(--ok)}
+.side-res .result-break{font-size:.9rem}
+
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.toggle-row .t-text{font-weight:700}
+.switch{position:relative;flex:none;width:52px;height:30px}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.switch i{position:absolute;inset:0;border-radius:999px;background:var(--wood-3);border:1px solid var(--line);transition:background .15s}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .15s, background .15s}
+.switch input:checked + i{background:var(--brass-soft)}
+.switch input:checked + i::after{transform:translateX(22px);background:var(--ink)}
+.switch input:focus-visible + i{outline:2px solid var(--brass);outline-offset:2px}
+
+.presets{display:grid;gap:6px}
+.presets > span{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px dashed var(--brass-soft);background:none;border-radius:999px;padding:5px 11px;font-size:.86rem;color:var(--ink)}
+
+/* history */
+.history{display:grid;gap:8px;padding-inline:2px}
+.history ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.history li{
+  display:flex;justify-content:space-between;gap:10px;align-items:baseline;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.92rem;
+}
+.history .h-what{color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.history .h-what time{color:var(--faint);margin-right:6px;font-variant-numeric:tabular-nums}
+.history .h-res{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.history .empty{color:var(--faint);font-size:.9rem;margin:0}
+
+/* roll bar */
+.roll-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;
+  padding-top:12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  background:linear-gradient(to top, var(--wood) 70%, rgba(27,20,16,0));
+}
+.roll-inner{max-width:560px;margin:0 auto;display:flex;gap:10px}
+.roll-btn{
+  flex:1;height:62px;border-radius:16px;border:0;
+  background:linear-gradient(180deg,#e7c47a,var(--brass) 55%,#b48a41);
+  color:var(--brass-ink);
+  font-family:var(--display);font-weight:800;font-size:1.6rem;letter-spacing:.06em;
+  box-shadow:0 2px 0 rgba(255,255,255,.35) inset, 0 6px 0 #7a5c2b, 0 10px 20px rgba(0,0,0,.45);
+  transition:transform .08s, box-shadow .08s;
+}
+.roll-btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(255,255,255,.35) inset, 0 2px 0 #7a5c2b, 0 4px 10px rgba(0,0,0,.4)}
+.roll-btn:disabled{filter:saturate(.6) brightness(.85)}
+.icon-btn{
+  width:62px;height:62px;border-radius:16px;border:1px solid var(--line);background:var(--wood-2);
+  display:grid;place-items:center;padding:0;
+}
+.icon-btn svg{width:26px;height:26px}
+
+/* set sheet */
+.sheet-backdrop{position:fixed;inset:0;z-index:20;background:rgba(5,3,2,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet{
+  width:100%;max-width:560px;box-sizing:border-box;
+  background:var(--wood-2);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;
+  padding-top:16px;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;gap:14px;max-height:85vh;overflow:auto;
+}
+.sheet h2{margin:0;font-family:var(--display);color:var(--brass);font-size:1.35rem}
+.set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.set-card{
+  display:grid;justify-items:center;gap:6px;padding:12px 6px 10px;
+  border-radius:14px;border:1px solid var(--line);background:var(--wood);
+}
+.set-card canvas{width:72px;height:72px}
+.set-card span{font-weight:700;font-size:.9rem;text-align:center}
+.set-card[aria-pressed="true"]{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset;background:#2b2015}
+.sheet-close{justify-self:stretch;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--wood-3);font-weight:700}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(96px + env(safe-area-inset-bottom, 0px));
+  background:#3a1d18;color:var(--ink);border:1px solid #7c3a2f;
+  padding:8px 14px;border-radius:10px;font-size:.9rem;z-index:6;max-width:calc(100% - 40px);text-align:center;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .roll-btn,.die-cell,.switch i,.switch i::after{transition:none}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="brand-name">Ζαριά</span>
+      <span class="brand-sub">dice roller για RPG</span>
+    </div>
+    <button class="set-btn" id="setBtn" aria-haspopup="dialog">
+      <canvas id="setSwatch" width="72" height="72" aria-hidden="true"></canvas>
+      <span><small>Σετ</small><span id="setName"></span></span>
+    </button>
+  </header>
+
+  <div class="modes" role="tablist" aria-label="Τύπος ζαριάς">
+    <button role="tab" id="tabSum" data-mode="sum" aria-selected="true">Άθροισμα</button>
+    <button role="tab" id="tabPool" data-mode="pool" aria-selected="false">Dice pool</button>
+  </div>
+
+  <section class="tray-wrap">
+    <canvas id="tray" aria-label="Δίσκος ζαριών"></canvas>
+    <div class="shake-chip" id="shakeChip">Κούνημα: έλεγχος αισθητήρα…</div>
+  </section>
+
+  <section class="result" aria-live="polite">
+    <div class="result-label" id="resLabel">Έφερες</div>
+    <div class="result-num" id="resNum">–</div>
+    <div class="result-tag" id="resTag"></div>
+    <div class="result-break" id="resBreak"></div>
+  </section>
+
+  <section class="panel" id="panelSum" aria-labelledby="tabSum">
+    <div class="panel-head">
+      <h3>Ζάρια</h3>
+      <button class="ghost" id="clearSum">Άδειασμα</button>
+    </div>
+    <div class="dice-grid" id="sumDice"></div>
+    <div class="row">
+      <span>Modifier<small>Προστίθεται στο σύνολο</small></span>
+      <div class="stepper">
+        <button id="modMinus" aria-label="Μείωση modifier">−</button>
+        <output id="modVal">+0</output>
+        <button id="modPlus" aria-label="Αύξηση modifier">+</button>
+      </div>
+    </div>
+    <label class="notation" for="notation">
+      <span>Ή γράψε τη ζαριά, π.χ. 1d20+3d8+1d6+2</span>
+      <input id="notation" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+    </label>
+    <p class="err" id="notErr" hidden></p>
+  </section>
+
+  <section class="panel" id="panelPool" aria-labelledby="tabPool" hidden>
+    <label class="toggle-row" for="opposed">
+      <span class="t-text">Opposed roll<small style="display:block;color:var(--faint);font-weight:400;font-size:.8rem">Δύο pools, το καθένα με τις δικές του ρυθμίσεις</small></span>
+      <span class="switch"><input type="checkbox" id="opposed"><i></i></span>
+    </label>
+    <div class="side-box" id="sideBox" hidden>
+      <div class="seg side-seg" id="sideSeg">
+        <button data-side="a" aria-pressed="true"></button>
+        <button data-side="b" aria-pressed="false"></button>
+      </div>
+      <label class="notation" for="sideName">
+        <span>Όνομα πλευράς</span>
+        <input id="sideName" type="text" maxlength="20" autocomplete="off" enterkeyhint="done">
+      </label>
+      <div class="row">
+        <span>Σετ ζαριών</span>
+        <button class="set-btn small" id="sideSetBtn" aria-haspopup="dialog">
+          <canvas id="sideSwatch" width="60" height="60" aria-hidden="true"></canvas>
+          <span id="sideSetName"></span>
+        </button>
+      </div>
+    </div>
+    <div class="row">
+      <span>Ζάρι</span>
+      <div class="seg" id="poolDie"></div>
+    </div>
+    <div class="row">
+      <span>Πόσα ζάρια</span>
+      <div class="stepper">
+        <button id="cntMinus" aria-label="Λιγότερα ζάρια">−</button>
+        <input id="cntVal" type="number" inputmode="numeric" min="1" max="999" aria-label="Πόσα ζάρια">
+        <button id="cntPlus" aria-label="Περισσότερα ζάρια">+</button>
+      </div>
+    </div>
+    <div class="row">
+      <span>Επιτυχία από<small>Αυτό το νούμερο και πάνω</small></span>
+      <div class="stepper">
+        <button id="thMinus" aria-label="Χαμηλότερο όριο">−</button>
+        <output id="thVal">8+</output>
+        <button id="thPlus" aria-label="Υψηλότερο όριο">+</button>
+      </div>
+    </div>
+    <div class="row">
+      <span>Again<small>Ξαναρίχνεις όποιο φέρει τόσο ή πάνω</small></span>
+      <div class="seg" id="poolAgain"></div>
+    </div>
+    <label class="toggle-row" for="rote">
+      <span class="t-text">Rote action<small style="display:block;color:var(--faint);font-weight:400;font-size:.8rem">Όσα δεν έφεραν επιτυχία ξαναρίχνονται μία φορά</small></span>
+      <span class="switch"><input type="checkbox" id="rote"><i></i></span>
+    </label>
+    <div class="presets">
+      <span>Γρήγορες ρυθμίσεις</span>
+      <div class="chips" id="presets"></div>
+    </div>
+  </section>
+
+  <section class="history">
+    <div class="panel-head">
+      <h3 style="margin:0;font-family:var(--display);color:var(--brass);font-size:1.1rem">Προηγούμενες ζαριές</h3>
+      <button class="ghost" id="clearHist">Καθαρισμός</button>
+    </div>
+    <ol id="histList"></ol>
+  </section>
+</div>
+
+<div class="roll-bar">
+  <div class="roll-inner">
+    <button class="icon-btn" id="soundBtn" aria-pressed="true" aria-label="Ήχος"></button>
+    <button class="roll-btn" id="rollBtn">Ρίξε</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h2 id="sheetTitle">Διάλεξε σετ ζαριών</h2>
+    <div class="set-grid" id="setGrid"></div>
+    <button class="sheet-close" id="sheetClose">Έτοιμο</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- data ---------- */
+const DIE_TYPES = [4, 6, 8, 10, 12, 20, 100];
+const POOL_TYPES = [6, 8, 10, 12, 20];
+const ANIM_LIMIT = 40;      // above this many dice: result only, no animation
+const MAX_DICE = 999;       // per die type in sum mode, per pool in pool mode
+
+const SETS = [
+  { id:"ember",    name:"Πυράκτωση",        a:"#6e0d12", b:"#d63a2b", edge:"#2a0406", ink:"#ffdc8e", deco:"glow",   decoColor:"rgba(255,170,90,.55)" },
+  { id:"obsidian", name:"Οψιανός",          a:"#08080b", b:"#3b3b47", edge:"#000000", ink:"#e8ebf2", deco:"specks", decoColor:"rgba(255,255,255,.22)" },
+  { id:"arcana",   name:"Αμέθυστος",        a:"#2a0b52", b:"#8f52dd", edge:"#14042b", ink:"#ffffff", deco:"swirl",  decoColor:"rgba(255,215,255,.35)" },
+  { id:"jade",     name:"Ξωτικός νεφρίτης", a:"#0b4433", b:"#45b382", edge:"#04261b", ink:"#f6e7a8", deco:"swirl",  decoColor:"rgba(210,255,225,.22)" },
+  { id:"bone",     name:"Κόκαλο",           a:"#bfb293", b:"#f5eedc", edge:"#776c56", ink:"#2a2019", deco:"specks", decoColor:"rgba(95,72,40,.28)" },
+  { id:"frost",    name:"Παγετός",          a:"#3c7ca6", b:"#d6f1ff", edge:"#1b4562", ink:"#0c2a41", deco:"shards", decoColor:"rgba(255,255,255,.45)", alpha:.88 },
+  { id:"minoan",   name:"Μινωικό",          a:"#954622", b:"#dc8a52", edge:"#461d0b", ink:"#fbf1dc", deco:"spiral", decoColor:"rgba(28,92,140,.85)" },
+  { id:"gold",     name:"Θησαυρός δράκου",  a:"#6f4a0f", b:"#f3cc60", edge:"#3a2604", ink:"#3a1c00", deco:"metal",  decoColor:"rgba(255,248,210,.55)" }
+];
+
+const PRESETS = [
+  { label:"Chronicles of Darkness", cfg:{ sides:10, th:8, again:10, rote:false } },
+  { label:"CofD · 9-again",         cfg:{ sides:10, th:8, again:9,  rote:false } },
+  { label:"CofD · rote",            cfg:{ sides:10, th:8, again:10, rote:true } },
+  { label:"Vampire V5",             cfg:{ sides:10, th:6, again:0,  rote:false } },
+  { label:"Shadowrun",              cfg:{ sides:6,  th:5, again:0,  rote:false } }
+];
+
+/* ---------- state ---------- */
+const STORE_KEY = "zaria.v1";
+const defaults = {
+  mode:"sum",
+  set:"ember",
+  sum:{ counts:{20:1, 8:3, 6:1}, mod:2 },
+  pool:{ sides:10, count:6, th:8, again:10, rote:false, name:"Εσύ" },
+  poolB:{ sides:10, count:4, th:8, again:10, rote:false, name:"Αντίπαλος", set:"obsidian" },
+  opposed:false,
+  editSide:"a",
+  sound:true,
+  history:[]
+};
+let state = JSON.parse(JSON.stringify(defaults));
+try {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (raw) {
+    const s = JSON.parse(raw);
+    state = Object.assign(state, s);
+    state.sum = Object.assign({}, defaults.sum, s.sum || {});
+    state.pool = Object.assign({}, defaults.pool, s.pool || {});
+    state.poolB = Object.assign({}, defaults.poolB, s.poolB || {});
+    if (!Array.isArray(state.history)) state.history = [];
+  }
+} catch (e) {}
+function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+const setById = id => SETS.find(s => s.id === id) || SETS[0];
+const curSet = () => setById(state.set);
+const P = () => (state.opposed && state.editSide === "b") ? state.poolB : state.pool;
+const sideName = (p, fallback) => (p.name || "").trim() || fallback;
+
+const $ = id => document.getElementById(id);
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---------- random ---------- */
+function rnd(n){
+  try {
+    const a = new Uint32Array(1);
+    const lim = Math.floor(0xFFFFFFFF / n) * n;
+    do { crypto.getRandomValues(a); } while (a[0] >= lim);
+    return 1 + (a[0] % n);
+  } catch (e) { return 1 + Math.floor(Math.random() * n); }
+}
+
+/* ---------- drawing a die ---------- */
+function poly(ctx, pts){ ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); }
+function regPts(n, R, start){ const p = []; for (let i = 0; i < n; i++){ const a = start + i * 2 * Math.PI / n; p.push([Math.cos(a) * R, Math.sin(a) * R]); } return p; }
+function rrect(ctx, x, y, w, h, r){ ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+function shapePath(ctx, s, r){
+  ctx.beginPath();
+  if (s === 4) poly(ctx, regPts(3, r * 1.2, -Math.PI / 2).map(([x, y]) => [x, y + r * .18]));
+  else if (s === 6) { const h = r * .84; rrect(ctx, -h, -h, 2 * h, 2 * h, r * .24); }
+  else if (s === 8) poly(ctx, [[0, -r * 1.06], [r * .88, 0], [0, r * 1.06], [-r * .88, 0]]);
+  else if (s === 10 || s === 100) poly(ctx, [[0, -r * 1.06], [r * .97, -r * .1], [r * .52, r * .8], [0, r * 1], [-r * .52, r * .8], [-r * .97, -r * .1]]);
+  else if (s === 12) poly(ctx, regPts(5, r * 1.04, -Math.PI / 2));
+  else poly(ctx, regPts(6, r * 1.06, -Math.PI / 2));
+}
+
+function facets(ctx, s, r){
+  ctx.beginPath();
+  if (s === 4) {
+    const v = regPts(3, r * 1.2, -Math.PI / 2).map(([x, y]) => [x, y + r * .18]);
+    v.forEach(([x, y]) => { ctx.moveTo(0, r * .18); ctx.lineTo(x, y); });
+  } else if (s === 8) {
+    ctx.moveTo(-r * .88, 0); ctx.lineTo(r * .88, 0);
+  } else if (s === 10 || s === 100) {
+    ctx.moveTo(-r * .97, -r * .1); ctx.lineTo(0, r * .42); ctx.lineTo(r * .97, -r * .1);
+    ctx.moveTo(0, r * .42); ctx.lineTo(0, r * 1);
+    ctx.moveTo(0, -r * 1.06); ctx.lineTo(0, -r * .62);
+  } else if (s === 12) {
+    const o = regPts(5, r * 1.04, -Math.PI / 2), i = regPts(5, r * .58, -Math.PI / 2);
+    poly(ctx, i);
+    for (let k = 0; k < 5; k++){ ctx.moveTo(i[k][0], i[k][1]); ctx.lineTo(o[k][0], o[k][1]); }
+  } else if (s === 20) {
+    const h = regPts(6, r * 1.06, -Math.PI / 2), t = regPts(3, r * .66, -Math.PI / 2);
+    poly(ctx, t);
+    // triangle vertex k (angles -90, 30, 150) -> hex vertices
+    const link = [[0, 1, 5], [1, 2, 3], [3, 4, 5]];
+    for (let k = 0; k < 3; k++) link[k].forEach(j => { ctx.moveTo(t[k][0], t[k][1]); ctx.lineTo(h[j][0], h[j][1]); });
+  }
+}
+
+function makeDecor(){
+  const dots = [];
+  for (let i = 0; i < 22; i++) dots.push([Math.random() * 2 - 1, Math.random() * 2 - 1, .02 + Math.random() * .05, .4 + Math.random() * .6]);
+  const curves = [];
+  for (let i = 0; i < 3; i++) curves.push([Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1]);
+  return { dots, curves, rot: Math.random() * Math.PI * 2 };
+}
+
+function drawSpiral(ctx, cx, cy, R){
+  ctx.beginPath();
+  for (let a = 0; a < Math.PI * 4.2; a += .2){
+    const rr = R * a / (Math.PI * 4.2);
+    const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+    a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function drawDecor(ctx, set, r, decor){
+  const c = set.decoColor;
+  ctx.save();
+  ctx.rotate(decor.rot);
+  if (set.deco === "specks") {
+    ctx.fillStyle = c;
+    decor.dots.forEach(([x, y, s, a]) => { ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x * r, y * r, s * r, 0, 7); ctx.fill(); });
+  } else if (set.deco === "swirl") {
+    ctx.strokeStyle = c; ctx.lineWidth = r * .07; ctx.lineCap = "round";
+    decor.curves.forEach(q => { ctx.beginPath(); ctx.moveTo(q[0] * r * 1.2, q[1] * r * 1.2); ctx.bezierCurveTo(q[2] * r, q[3] * r, q[4] * r, q[5] * r, -q[0] * r * 1.2, -q[1] * r); ctx.stroke(); });
+  } else if (set.deco === "glow") {
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+    g.addColorStop(0, c); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(-r * 1.2, -r * 1.2, r * 2.4, r * 2.4);
+    ctx.fillStyle = "rgba(255,210,140,.5)";
+    decor.dots.slice(0, 8).forEach(([x, y, s]) => { ctx.beginPath(); ctx.arc(x * r * .9, y * r * .9, s * r * .6, 0, 7); ctx.fill(); });
+  } else if (set.deco === "shards") {
+    ctx.strokeStyle = c; ctx.lineWidth = Math.max(1, r * .03);
+    decor.curves.forEach(q => { ctx.beginPath(); ctx.moveTo(q[0] * r, q[1] * r); ctx.lineTo(q[2] * r, q[3] * r); ctx.lineTo(q[4] * r, q[5] * r); ctx.stroke(); });
+  } else if (set.deco === "spiral") {
+    ctx.strokeStyle = c; ctx.lineWidth = Math.max(1.2, r * .07); ctx.lineCap = "round";
+    drawSpiral(ctx, -r * .55, -r * .45, r * .38);
+    drawSpiral(ctx, r * .6, r * .5, r * .38);
+  } else if (set.deco === "metal") {
+    const g = ctx.createLinearGradient(-r, -r, r, r);
+    g.addColorStop(.25, "rgba(255,255,255,0)"); g.addColorStop(.42, c); g.addColorStop(.5, "rgba(255,255,255,0)");
+    g.addColorStop(.68, "rgba(255,255,255,0)"); g.addColorStop(.74, "rgba(255,250,220,.3)"); g.addColorStop(.8, "rgba(255,255,255,0)");
+    ctx.fillStyle = g; ctx.fillRect(-r * 1.3, -r * 1.3, r * 2.6, r * 2.6);
+  }
+  ctx.restore();
+}
+
+const PIPS = {
+  1:[[0,0]], 2:[[-1,-1],[1,1]], 3:[[-1,-1],[0,0],[1,1]], 4:[[-1,-1],[1,-1],[-1,1],[1,1]],
+  5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]], 6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]]
+};
+
+function numberFor(s, v, r){
+  if (s === 4) return { y:r * .32, size:r * .55 };
+  if (s === 8) return { y:0, size:r * .66 };
+  if (s === 10) return { y:-r * .12, size:r * .6 };
+  if (s === 100) return { y:-r * .12, size:r * (v >= 100 ? .4 : .5) };
+  if (s === 12) return { y:0, size:r * .62 };
+  if (s === 20) return { y:r * .06, size:r * .52 };
+  return { y:0, size:r * .8 };
+}
+
+/* draws a die centred at the current origin, already rotated/scaled by the caller */
+function drawDieBody(ctx, s, r, value, set, decor){
+  ctx.save();
+  if (set.alpha) ctx.globalAlpha *= set.alpha;
+  shapePath(ctx, s, r);
+  const g = ctx.createLinearGradient(-r, -r, r, r);
+  g.addColorStop(0, set.b); g.addColorStop(1, set.a);
+  ctx.fillStyle = g; ctx.fill();
+  ctx.save(); ctx.clip();
+  drawDecor(ctx, set, r, decor);
+  const hl = ctx.createRadialGradient(-r * .4, -r * .5, 0, -r * .4, -r * .5, r * 1.1);
+  hl.addColorStop(0, "rgba(255,255,255,.28)"); hl.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = hl; ctx.fillRect(-r * 1.3, -r * 1.3, r * 2.6, r * 2.6);
+  ctx.restore();
+  ctx.strokeStyle = set.edge; ctx.globalAlpha *= .55; ctx.lineWidth = Math.max(.8, r * .035);
+  facets(ctx, s, r); ctx.stroke();
+  ctx.globalAlpha /= .55;
+  shapePath(ctx, s, r);
+  ctx.lineWidth = Math.max(1.2, r * .07); ctx.lineJoin = "round"; ctx.strokeStyle = set.edge; ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = set.ink;
+  if (s === 6) {
+    const p = PIPS[value] || PIPS[1], gap = r * .44, pr = r * .13;
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = r * .08;
+    p.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x * gap, y * gap, pr, 0, 7); ctx.fill(); });
+    ctx.restore();
+    return;
+  }
+  const nf = numberFor(s, value, r);
+  ctx.save();
+  ctx.font = `800 ${nf.size}px "Alegreya Sans", system-ui, sans-serif`;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = r * .06;
+  ctx.fillText(String(value), 0, nf.y);
+  if ((value === 6 || value === 9) && s >= 8) {
+    ctx.fillRect(-nf.size * .22, nf.y + nf.size * .42, nf.size * .44, Math.max(1, nf.size * .07));
+  }
+  ctx.restore();
+}
+
+/* small static icon */
+function drawIcon(canvas, s, set, value){
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
+  canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+  ctx.translate(cssW / 2, cssH / 2);
+  if (!canvas._decor) canvas._decor = makeDecor();
+  drawDieBody(ctx, s, Math.min(cssW, cssH) * .4, value, set, canvas._decor);
+}
+
+/* ---------- sound ---------- */
+let ac = null, noiseBuf = null, lastClack = 0;
+function ensureAudio(){
+  if (!state.sound) return;
+  try {
+    if (!ac) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      ac = new AC();
+      noiseBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * .06), ac.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    }
+    if (ac.state === "suspended") ac.resume();
+  } catch (e) { ac = null; }
+}
+function clack(v){
+  if (!ac || !state.sound) return;
+  const now = ac.currentTime;
+  if (now - lastClack < .03) return;
+  lastClack = now;
+  try {
+    const src = ac.createBufferSource(); src.buffer = noiseBuf;
+    const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 1500 + Math.random() * 2500; bp.Q.value = 2.5;
+    const g = ac.createGain(); g.gain.value = Math.min(.5, .08 + v * .5);
+    src.connect(bp); bp.connect(g); g.connect(ac.destination);
+    src.start(now);
+  } catch (e) {}
+}
+function buzz(ms){ try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+/* ---------- tray ---------- */
+const tray = (() => {
+  const cv = $("tray"), ctx = cv.getContext("2d");
+  let W = 300, H = 220, dpr = 1, dice = [], raf = 0, last = 0, waiting = null, felt = null;
+  let lanes = 1, laneNames = [], msg = null, planned = null;
+
+  function makeFelt(){
+    const c = document.createElement("canvas"); c.width = c.height = 96;
+    const x = c.getContext("2d");
+    for (let i = 0; i < 900; i++){
+      x.fillStyle = Math.random() < .5 ? "rgba(255,255,255,.035)" : "rgba(0,0,0,.08)";
+      x.fillRect(Math.random() * 96, Math.random() * 96, 1, 1 + Math.random() * 2);
+    }
+    felt = ctx.createPattern(c, "repeat");
+  }
+
+  function resize(){
+    const rect = cv.getBoundingClientRect();
+    const nW = Math.max(100, rect.width), nH = Math.max(100, rect.height);
+    dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    cv.width = Math.round(nW * dpr); cv.height = Math.round(nH * dpr);
+    if (W && H) dice.forEach(d => { d.x *= nW / W; d.y *= nH / H; });
+    W = nW; H = nH;
+    if (!felt) makeFelt();
+    draw();
+  }
+
+  const lx0 = l => W * l / lanes;
+  const lx1 = l => W * (l + 1) / lanes;
+  const topPad = () => lanes > 1 ? 24 : 0;
+
+  // free-rolling size: how big a die can be if n dice share one lane
+  const freeR = n => Math.sqrt((W / lanes) * (H - topPad()) / (Math.max(1, n) * 11));
+  // the dice fit loosely only if they can stay readable at this size
+  const comfy = n => freeR(n) >= 17;
+  function gridSpec(l, n){
+    const w = lx1(l) - lx0(l), h = H - topPad();
+    const cols = Math.max(1, Math.ceil(Math.sqrt(n * w / h))), rows = Math.max(1, Math.ceil(n / cols));
+    const cw = w / cols, ch = h / rows;
+    return { cols, cw, ch, r:Math.max(9, Math.min(38, Math.min(cw, ch) * .38)) };
+  }
+  // size for a die in a roll that will end with n dice in its lane
+  function radiusFor(n){
+    if (comfy(n)) return Math.min(38, freeR(n));
+    let r = 38;
+    for (let l = 0; l < lanes; l++) r = Math.min(r, gridSpec(l, n).r);
+    return r;
+  }
+  const plannedMax = () => planned ? Math.max(...planned.slice(0, lanes).map(x => x || 0), 1) : 0;
+
+  function newDie(spec, r){
+    return Object.assign({
+      x:W / 2, y:H / 2, vx:0, vy:0, ang:Math.random() * 6.28, va:0, r,
+      shown:spec.value, settled:true, settleT:0, born:0, flipPh:0, lastFlip:0,
+      targetAng:(Math.random() - .5) * .35, decor:makeDecor(), mark:null, badge:null, dim:false,
+      lane:0, setId:null
+    }, spec);
+  }
+
+  // grid slots per lane, sized for the whole planned roll so earlier dice never have to move again
+  function gridTargets(){
+    const out = new Map();
+    for (let l = 0; l < lanes; l++){
+      const ds = dice.filter(d => (d.lane || 0) === l);
+      if (!ds.length) continue;
+      const n = Math.max(ds.length, planned ? (planned[l] || 0) : 0);
+      const g = gridSpec(l, n);
+      ds.forEach((d, i) => out.set(d, {
+        x:lx0(l) + g.cw * (i % g.cols + .5),
+        y:topPad() + g.ch * (Math.floor(i / g.cols) + .5),
+        r:g.r
+      }));
+    }
+    return out;
+  }
+  function layoutAll(){
+    gridTargets().forEach((t, d) => {
+      d.r = t.r; d.x = t.x; d.y = t.y;
+      d.vx = d.vy = d.va = 0; d.settled = true; d.ang = d.targetAng; d.shown = d.value;
+    });
+  }
+  // slides the landed dice into a tidy grid when there are too many to lie loose
+  function tidy(){
+    const n = plannedMax() || Math.max(...[0, 1].slice(0, lanes).map(l => dice.filter(d => (d.lane || 0) === l).length));
+    if (comfy(n) || !dice.length) return Promise.resolve();
+    const targets = gridTargets();
+    if (reducedMotion) { layoutAll(); draw(); return Promise.resolve(); }
+    const from = new Map();
+    targets.forEach((t, d) => from.set(d, { x:d.x, y:d.y, r:d.r, a:d.ang }));
+    return new Promise(resolve => {
+      const t0 = performance.now(), dur = 320;
+      const frame = t => {
+        const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        targets.forEach((g, d) => {
+          const f = from.get(d);
+          d.x = f.x + (g.x - f.x) * e; d.y = f.y + (g.y - f.y) * e; d.r = f.r + (g.r - f.r) * e;
+          let da = d.targetAng - f.a; da = Math.atan2(Math.sin(da), Math.cos(da));
+          d.ang = f.a + da * e;
+        });
+        draw();
+        if (k < 1) requestAnimationFrame(frame); else resolve();
+      };
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function setLanes(n, names){ lanes = n; laneNames = names || []; }
+  function setMessage(m){ msg = m; draw(); }
+  function setPlanned(perLane){ planned = perLane; }
+  function clear(){ dice = []; msg = null; planned = null; draw(); }
+  function place(specs){ dice = specs.map(s => newDie(s, 30)); msg = null; layoutAll(); draw(); }
+
+  function play(specs, fromSide){
+    return new Promise(resolve => {
+      msg = null;
+      const counts = [0, 0];
+      dice.concat(specs).forEach(d => { counts[d.lane || 0]++; });
+      const r = radiusFor(Math.max(plannedMax(), ...counts.slice(0, lanes)));
+      const now = performance.now();
+      const fresh = specs.map((s, i) => {
+        const d = newDie(s, r);
+        const l = d.lane || 0, x0 = lx0(l), x1 = lx1(l), w = x1 - x0;
+        d.settled = false; d.born = now; d.shown = rnd(d.sides);
+        if (fromSide) {
+          const left = lanes > 1 ? l === 0 : i % 2 === 0;
+          d.x = left ? x0 + r + 2 : x1 - r - 2;
+          d.y = topPad() + (H - topPad()) * (.25 + Math.random() * .5);
+          d.vx = (left ? 1 : -1) * w * (2.2 + Math.random() * 1.2);
+          d.vy = (Math.random() - .5) * H * 2;
+        } else {
+          d.x = x0 + w * (.2 + Math.random() * .6); d.y = H - r - 2 - (i % 4) * 3;
+          d.vx = (Math.random() - .5) * w * 2.4; d.vy = -H * (2.4 + Math.random() * 1.6);
+        }
+        d.va = (Math.random() - .5) * 22;
+        return d;
+      });
+      dice.push(...fresh);
+      if (reducedMotion || !fresh.length) { layoutAll(); draw(); setTimeout(resolve, 120); return; }
+      waiting = { dice:fresh, resolve };
+      if (!raf) { last = now; raf = requestAnimationFrame(loop); }
+    });
+  }
+
+  function loop(t){
+    const dt = Math.min(.034, (t - last) / 1000); last = t;
+    step(dt, t);
+    draw();
+    if (waiting) {
+      const all = waiting.dice.every(d => d.settled);
+      const lastSettle = Math.max(...waiting.dice.map(d => d.settleT || 0));
+      if (all && t - lastSettle > 230) {
+        const w = waiting; waiting = null;
+        dice.forEach(d => { d.ang = d.targetAng; });
+        draw();
+        raf = 0; w.resolve(); return;
+      }
+    }
+    raf = requestAnimationFrame(loop);
+  }
+
+  function step(dt, now){
+    const damp = Math.exp(-2.3 * dt), adamp = Math.exp(-2.6 * dt);
+    const minYPad = lanes > 1 ? 14 : 0;
+    for (const d of dice){
+      if (d.settled) {
+        if (now - d.settleT < 260) {
+          let da = d.targetAng - d.ang; da = Math.atan2(Math.sin(da), Math.cos(da));
+          d.ang += da * Math.min(1, dt * 14);
+        }
+        continue;
+      }
+      d.vx *= damp; d.vy *= damp; d.va *= adamp;
+      d.x += d.vx * dt; d.y += d.vy * dt; d.ang += d.va * dt;
+      const sp = Math.hypot(d.vx, d.vy);
+      d.flipPh += (sp * .045 + Math.abs(d.va) * .4) * dt;
+      const minX = lx0(d.lane || 0) + d.r, maxX = lx1(d.lane || 0) - d.r;
+      const minY = d.r + minYPad, maxY = H - d.r;
+      if (d.x < minX) { d.x = minX; if (d.vx < 0) { clack(-d.vx / 1400); d.vx = -d.vx * .62; d.va += (Math.random() - .5) * 6; } }
+      if (d.x > maxX) { d.x = maxX; if (d.vx > 0) { clack(d.vx / 1400); d.vx = -d.vx * .62; d.va += (Math.random() - .5) * 6; } }
+      if (d.y < minY) { d.y = minY; if (d.vy < 0) { clack(-d.vy / 1400); d.vy = -d.vy * .62; } }
+      if (d.y > maxY) { d.y = maxY; if (d.vy > 0) { clack(d.vy / 1400); d.vy = -d.vy * .62; } }
+      if (sp > 70 && now - d.lastFlip > 75) { d.shown = rnd(d.sides); d.lastFlip = now; }
+      const age = (now - d.born) / 1000;
+      if ((sp < 38 && age > .5) || age > 2.4) {
+        d.settled = true; d.settleT = now; d.shown = d.value; d.vx = d.vy = d.va = 0;
+        clack(.06);
+      }
+    }
+    for (let i = 0; i < dice.length; i++){
+      const a = dice[i];
+      for (let j = i + 1; j < dice.length; j++){
+        const b = dice[j];
+        if (a.settled && b.settled) continue;
+        if ((a.lane || 0) !== (b.lane || 0)) continue;
+        const dx = b.x - a.x, dy = b.y - a.y, min = (a.r + b.r) * .95;
+        const dist2 = dx * dx + dy * dy;
+        if (dist2 >= min * min || dist2 === 0) continue;
+        const dist = Math.sqrt(dist2), nx = dx / dist, ny = dy / dist, ov = min - dist;
+        const ma = a.settled ? 0 : 1, mb = b.settled ? 0 : 1, tot = ma + mb;
+        a.x -= nx * ov * ma / tot; a.y -= ny * ov * ma / tot;
+        b.x += nx * ov * mb / tot; b.y += ny * ov * mb / tot;
+        const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (rv < 0) {
+          const imp = -1.55 * rv / tot;
+          a.vx -= imp * nx * ma; a.vy -= imp * ny * ma;
+          b.vx += imp * nx * mb; b.vy += imp * ny * mb;
+          a.va += (Math.random() - .5) * 4 * ma; b.va += (Math.random() - .5) * 4 * mb;
+          clack(-rv / 1600);
+        }
+      }
+    }
+  }
+
+  function draw(){
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const bg = ctx.createRadialGradient(W * .5, H * .42, 10, W * .5, H * .5, Math.max(W, H) * .75);
+    bg.addColorStop(0, "#2a5644"); bg.addColorStop(1, "#11271d");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    if (felt) { ctx.fillStyle = felt; ctx.fillRect(0, 0, W, H); }
+
+    if (lanes > 1) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(214,173,94,.35)"; ctx.setLineDash([6, 6]); ctx.lineWidth = 1.5;
+      for (let l = 1; l < lanes; l++){ ctx.beginPath(); ctx.moveTo(lx0(l), 8); ctx.lineTo(lx0(l), H - 8); ctx.stroke(); }
+      ctx.setLineDash([]);
+      ctx.font = `700 13px "Alegreya Sans", system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      for (let l = 0; l < lanes; l++){
+        const name = laneNames[l] || "";
+        if (!name) continue;
+        const cx = (lx0(l) + lx1(l)) / 2, tw = Math.min(ctx.measureText(name).width + 18, lx1(l) - lx0(l) - 12);
+        ctx.fillStyle = "rgba(8,16,12,.55)";
+        ctx.beginPath(); rrect(ctx, cx - tw / 2, 5, tw, 20, 10); ctx.fill();
+        ctx.fillStyle = "rgba(242,232,213,.85)";
+        ctx.fillText(name, cx, 15.5, tw - 12);
+      }
+      ctx.restore();
+    }
+
+    const order = dice.slice().sort((a, b) => (a.settled === b.settled ? a.y - b.y : (a.settled ? -1 : 1)));
+    const now = performance.now();
+    for (const d of order){
+      const set = d.setId ? setById(d.setId) : curSet();
+      const moving = !d.settled;
+      const lift = moving ? Math.min(1, Math.hypot(d.vx, d.vy) / 900) : 0;
+      ctx.save();
+      ctx.fillStyle = "rgba(0,0,0,.38)";
+      ctx.beginPath();
+      ctx.ellipse(d.x + d.r * (.12 + lift * .35), d.y + d.r * (.22 + lift * .45), d.r * 1.02, d.r * .9, 0, 0, 7);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(d.x, d.y - lift * d.r * .25);
+      if (d.dim) ctx.globalAlpha = d.mark === "x" ? .32 : .5;
+      if (d.mark === "s" || d.mark === "c" || d.mark === "l") {
+        ctx.save();
+        ctx.shadowColor = d.mark === "l" ? "rgba(226,114,95,.95)" : d.mark === "c" ? "rgba(244,208,110,1)" : "rgba(214,173,94,.95)";
+        ctx.shadowBlur = d.r * .9;
+        ctx.strokeStyle = d.mark === "l" ? "#e2725f" : d.mark === "c" ? "#f4d06e" : "#d6ad5e";
+        ctx.lineWidth = Math.max(2, d.r * .1);
+        ctx.beginPath(); ctx.arc(0, 0, d.r * 1.25, 0, 7); ctx.stroke();
+        ctx.restore();
+      }
+      ctx.rotate(d.ang);
+      let sx = 1;
+      if (moving) sx = .42 + .58 * Math.abs(Math.cos(d.flipPh));
+      else if (now - d.settleT < 220) sx = Math.min(1, .6 + (now - d.settleT) / 220 * .4);
+      ctx.scale(sx, 1);
+      drawDieBody(ctx, d.sides, d.r, d.settled ? d.value : d.shown, set, d.decor);
+      ctx.restore();
+
+      if (d.mark === "x") {
+        ctx.save();
+        ctx.strokeStyle = "rgba(226,114,95,.85)"; ctx.lineWidth = Math.max(2, d.r * .09); ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(d.x - d.r * .8, d.y + d.r * .8); ctx.lineTo(d.x + d.r * .8, d.y - d.r * .8); ctx.stroke();
+        ctx.restore();
+      }
+      if (d.badge && d.settled) {
+        const bx = d.x + d.r * .9, by = d.y - d.r * .9, br = Math.max(7, d.r * .32);
+        ctx.save();
+        ctx.fillStyle = "#d6ad5e"; ctx.strokeStyle = "#22180d"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(bx, by, br, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#22180d"; ctx.font = `800 ${br * 1.15}px "Alegreya Sans", system-ui, sans-serif`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(d.badge, bx, by + br * .05);
+        ctx.restore();
+      }
+    }
+
+    if (!dice.length) {
+      ctx.save();
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      if (msg) {
+        ctx.fillStyle = "rgba(242,232,213,.95)";
+        ctx.font = `800 ${Math.min(46, W / 7)}px "Alegreya SC", Georgia, serif`;
+        ctx.fillText(msg.title, W / 2, H / 2 - 12);
+        ctx.fillStyle = "rgba(242,232,213,.6)";
+        ctx.font = `600 14px "Alegreya Sans", system-ui, sans-serif`;
+        ctx.fillText(msg.sub || "", W / 2, H / 2 + 24, W - 32);
+      } else {
+        ctx.fillStyle = "rgba(242,232,213,.45)";
+        ctx.font = `600 15px "Alegreya Sans", system-ui, sans-serif`;
+        ctx.fillText("Διάλεξε ζάρια και πάτα «Ρίξε»", W / 2, H / 2);
+      }
+      ctx.restore();
+    }
+  }
+
+  function byId(id){ return dice.find(d => d.id === id); }
+
+  new ResizeObserver(resize).observe(cv);
+  return { resize, clear, place, play, tidy, byId, redraw:draw, setLanes, setMessage, setPlanned };
+})();
+
+/* ---------- rules ---------- */
+function rollSum(counts){
+  const dice = [];
+  [20, 12, 10, 8, 6, 4, 100].forEach(s => {
+    const n = counts[s] || 0;
+    for (let i = 0; i < n; i++) dice.push({ id:"s" + dice.length, sides:s, value:rnd(s) });
+  });
+  return dice;
+}
+
+const POOL_HARD_CAP = 20000; // stops a runaway 2-again chain, far above any real roll
+function planPool(p){
+  const s = p.sides;
+  const th = Math.max(1, Math.min(p.th, s));
+  const ag = p.again && p.again >= 2 && p.again <= s ? p.again : null;
+  let uid = 0;
+  const mk = (origin, extra) => Object.assign({ id:"p" + (uid++), sides:s, value:rnd(s), origin }, extra || {});
+  const waves = [];
+  const w0 = [];
+  for (let i = 0; i < p.count; i++) w0.push(mk("base"));
+  waves.push(w0);
+  let cur = w0, total = w0.length, k = 0;
+  while (cur.length && total < POOL_HARD_CAP) {
+    const next = [];
+    for (const d of cur){
+      if (ag && d.value >= ag && total + next.length < POOL_HARD_CAP) next.push(mk("again", { parent:d.id }));
+      if (k === 0 && p.rote && d.value < th && total + next.length < POOL_HARD_CAP) { d.rerolled = true; next.push(mk("rote", { replaces:d.id })); }
+    }
+    if (!next.length) break;
+    waves.push(next); total += next.length; cur = next; k++;
+  }
+  const all = waves.flat();
+  const successes = all.filter(d => !d.rerolled && d.value >= th).length;
+  return { waves, all, successes, th, ag };
+}
+
+/* ---------- notation ---------- */
+function toNotation(counts, mod){
+  const parts = [];
+  [20, 12, 10, 8, 6, 4, 100].forEach(s => { if (counts[s]) parts.push(`${counts[s]}d${s}`); });
+  let t = parts.join("+");
+  if (mod) t += (mod > 0 ? (t ? "+" : "") : "-") + Math.abs(mod);
+  return t;
+}
+function parseNotation(str){
+  const clean = str.toLowerCase().replace(/[δΔ]/g, "d").replace(/\s+/g, "").replace(/d%/g, "d100");
+  if (!clean) return { counts:{}, mod:0 };
+  if (!/^[+-]?(\d*d\d+|\d+)([+-](\d*d\d+|\d+))*$/.test(clean)) return null;
+  const counts = {}; let mod = 0;
+  const terms = clean.match(/[+-]?[^+-]+/g) || [];
+  for (const term of terms){
+    const neg = term[0] === "-";
+    const body = term.replace(/^[+-]/, "");
+    const m = body.match(/^(\d*)d(\d+)$/);
+    if (m) {
+      if (neg) return null;
+      const n = m[1] === "" ? 1 : parseInt(m[1], 10), s = parseInt(m[2], 10);
+      if (!DIE_TYPES.includes(s) || n < 1) return null;
+      counts[s] = (counts[s] || 0) + n;
+      if (counts[s] > MAX_DICE) return null;
+    } else {
+      mod += (neg ? -1 : 1) * parseInt(body, 10);
+    }
+  }
+  if (Math.abs(mod) > 9999) return null;
+  return { counts, mod };
+}
+
+/* ---------- UI: sum panel ---------- */
+const cellRefs = {};
+function buildSumGrid(){
+  const host = $("sumDice"); host.innerHTML = "";
+  DIE_TYPES.forEach(s => {
+    const cell = document.createElement("div");
+    cell.className = "die-cell";
+    const name = "d" + s;
+    cell.innerHTML = `
+      <button class="die-ico" aria-label="Πρόσθεσε ένα ${name}"><canvas width="40" height="40"></canvas></button>
+      <span class="die-name">${name}</span>
+      <div class="mini-step">
+        <button class="m" aria-label="Αφαίρεσε ένα ${name}">−</button>
+        <output>0</output>
+        <button class="p" aria-label="Πρόσθεσε ένα ${name}">+</button>
+      </div>`;
+    const add = () => setCount(s, (state.sum.counts[s] || 0) + 1);
+    cell.querySelector(".die-ico").addEventListener("click", add);
+    cell.querySelector(".p").addEventListener("click", add);
+    cell.querySelector(".m").addEventListener("click", () => setCount(s, (state.sum.counts[s] || 0) - 1));
+    host.appendChild(cell);
+    cellRefs[s] = { cell, out:cell.querySelector("output"), canvas:cell.querySelector("canvas") };
+  });
+}
+function setCount(s, n){
+  n = Math.max(0, Math.min(MAX_DICE, n));
+  if (n) state.sum.counts[s] = n; else delete state.sum.counts[s];
+  syncSum(); save();
+}
+function syncSum(){
+  DIE_TYPES.forEach(s => {
+    const n = state.sum.counts[s] || 0, ref = cellRefs[s];
+    ref.out.textContent = n; ref.cell.classList.toggle("on", n > 0);
+  });
+  const m = state.sum.mod;
+  $("modVal").textContent = (m >= 0 ? "+" : "−") + Math.abs(m);
+  if (document.activeElement !== $("notation")) $("notation").value = toNotation(state.sum.counts, m);
+  $("notErr").hidden = true;
+}
+function drawIcons(){
+  const set = curSet();
+  const iconVal = { 4:4, 6:5, 8:8, 10:10, 12:12, 20:20, 100:100 };
+  DIE_TYPES.forEach(s => drawIcon(cellRefs[s].canvas, s, set, iconVal[s]));
+  drawIcon($("setSwatch"), 20, set, 20);
+  $("setName").textContent = set.name;
+}
+
+/* ---------- UI: pool panel ---------- */
+function poolDefaultsFor(s){
+  if (s === 10) return { th:8, again:10 };
+  if (s === 6) return { th:5, again:0 };
+  return { th:s, again:0 };
+}
+function buildPool(){
+  const die = $("poolDie"); die.innerHTML = "";
+  POOL_TYPES.forEach(s => {
+    const b = document.createElement("button");
+    b.textContent = "d" + s; b.dataset.s = s;
+    b.addEventListener("click", () => {
+      const p = P();
+      if (p.sides === s) return;
+      p.sides = s;
+      Object.assign(p, poolDefaultsFor(s));
+      syncPool(); save();
+    });
+    die.appendChild(b);
+  });
+  const pr = $("presets"); pr.innerHTML = "";
+  PRESETS.forEach(preset => {
+    const b = document.createElement("button");
+    b.textContent = preset.label;
+    b.addEventListener("click", () => { Object.assign(P(), preset.cfg); syncPool(); save(); });
+    pr.appendChild(b);
+  });
+}
+function syncSideSeg(){
+  const a = state.pool, b = state.poolB;
+  const btns = $("sideSeg").children;
+  btns[0].textContent = `${sideName(a, "Πλευρά Α")} · ${a.count}d${a.sides}`;
+  btns[1].textContent = `${sideName(b, "Πλευρά Β")} · ${b.count}d${b.sides}`;
+  btns[0].setAttribute("aria-pressed", String(state.editSide !== "b"));
+  btns[1].setAttribute("aria-pressed", String(state.editSide === "b"));
+}
+function syncPool(){
+  const p = P();
+  p.count = Math.max(1, Math.min(MAX_DICE, p.count | 0 || 1));
+  p.th = Math.max(2, Math.min(p.th, p.sides));
+  if (p.again && (p.again > p.sides || p.again < 2)) p.again = 0;
+  [...$("poolDie").children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.s === p.sides)));
+  if (document.activeElement !== $("cntVal")) $("cntVal").value = p.count;
+  $("thVal").textContent = p.th + "+";
+  const ag = $("poolAgain"); ag.innerHTML = "";
+  const opts = [0, p.sides, p.sides - 1, p.sides - 2].filter((v, i, a) => v === 0 || (v >= 2 && a.indexOf(v) === i));
+  opts.forEach(v => {
+    const b = document.createElement("button");
+    b.textContent = v ? `${v}-again` : "Όχι";
+    b.setAttribute("aria-pressed", String((p.again || 0) === v));
+    b.addEventListener("click", () => { P().again = v; syncPool(); save(); });
+    ag.appendChild(b);
+  });
+  $("rote").checked = !!p.rote;
+  $("opposed").checked = state.opposed;
+  $("sideBox").hidden = !state.opposed;
+  if (state.opposed) {
+    syncSideSeg();
+    if (document.activeElement !== $("sideName")) $("sideName").value = p.name || "";
+    const sid = state.editSide === "b" ? state.poolB.set : state.set;
+    drawIcon($("sideSwatch"), 10, setById(sid), 10);
+    $("sideSetName").textContent = setById(sid).name;
+  }
+}
+
+/* ---------- mode ---------- */
+function setMode(m){
+  state.mode = m;
+  $("tabSum").setAttribute("aria-selected", String(m === "sum"));
+  $("tabPool").setAttribute("aria-selected", String(m === "pool"));
+  $("panelSum").hidden = m !== "sum";
+  $("panelPool").hidden = m !== "pool";
+  save();
+}
+
+/* ---------- results ---------- */
+function esc(t){ return String(t).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])); }
+const plural = n => n === 1 ? "επιτυχία" : "επιτυχίες";
+
+function showPending(){
+  $("resLabel").textContent = "Κυλάνε…";
+  $("resNum").textContent = "…"; $("resNum").classList.remove("fail");
+  $("resTag").textContent = ""; $("resTag").className = "result-tag";
+  $("resBreak").innerHTML = "";
+}
+
+function sumOutcome(dice, mod){
+  const total = dice.reduce((a, d) => a + d.value, 0) + mod;
+  const groups = {};
+  dice.forEach(d => { (groups[d.sides] = groups[d.sides] || []).push(d); });
+  const d20s = groups[20] || [];
+  let tag = "", tagCls = "";
+  if (d20s.length === 1) {
+    if (d20s[0].value === 20) { tag = "Natural 20!"; tagCls = "crit"; }
+    else if (d20s[0].value === 1) { tag = "Natural 1…"; tagCls = "bad"; }
+  }
+  return { total, groups, tag, tagCls };
+}
+
+function showSum(dice, mod){
+  const o = sumOutcome(dice, mod);
+  $("resLabel").textContent = dice.length > 1 ? `Έφερες · ${dice.length} ζάρια` : "Έφερες";
+  $("resNum").textContent = o.total;
+  $("resNum").classList.remove("fail");
+  $("resTag").textContent = o.tag; $("resTag").className = "result-tag " + o.tagCls;
+  let html = "";
+  [20, 12, 10, 8, 6, 4, 100].forEach(s => {
+    const g = o.groups[s]; if (!g) return;
+    if (g.length > 24) {
+      const sum = g.reduce((a, d) => a + d.value, 0);
+      html += `<span class="grp"><b>${g.length}d${s}</b><span class="pip">Σ ${sum}</span></span>`;
+      return;
+    }
+    html += `<span class="grp"><b>${g.length}d${s}</b>${g.map(d => {
+      const c = s === 20 && d.value === 20 ? " c" : s === 20 && d.value === 1 ? " l" : "";
+      return `<span class="pip${c}">${d.value}</span>`;
+    }).join("")}</span>`;
+  });
+  if (mod) html += `<span class="grp"><b>mod</b><span class="pip">${mod > 0 ? "+" : "−"}${Math.abs(mod)}</span></span>`;
+  $("resBreak").innerHTML = html;
+  return o;
+}
+
+/* a line of dice: each die for small groups, "face × count" for big ones */
+function poolLine(label, dice, th){
+  if (!dice.length) return "";
+  let inner;
+  if (dice.length <= 24) {
+    inner = dice.map(d => `<span class="pip${d.rerolled ? " x" : d.value >= th ? " s" : " f"}">${d.value}</span>`).join("");
+  } else {
+    const m = new Map();
+    dice.forEach(d => { const k = d.value + (d.rerolled ? "x" : ""); m.set(k, (m.get(k) || 0) + 1); });
+    inner = [...m.entries()]
+      .sort((a, b) => parseInt(b[0], 10) - parseInt(a[0], 10))
+      .map(([k, n]) => {
+        const v = parseInt(k, 10), x = k.endsWith("x");
+        return `<span class="pip${x ? " x" : v >= th ? " s" : " f"}">${v}×${n}</span>`;
+      }).join("");
+  }
+  return `<span class="grp"><b>${esc(label)}</b>${inner}</span>`;
+}
+function poolBreak(plan, p){
+  const base = plan.waves[0];
+  const ag = plan.all.filter(d => d.origin === "again");
+  const ro = plan.all.filter(d => d.origin === "rote");
+  return poolLine(`${base.length}d${p.sides}`, base, plan.th)
+       + poolLine("rote", ro, plan.th)
+       + poolLine(`${plan.ag}-again`, ag, plan.th);
+}
+
+function showPool(plan, p){
+  const n = plan.successes;
+  $("resLabel").textContent = n === 1 ? "Επιτυχία" : "Επιτυχίες";
+  $("resNum").textContent = n;
+  $("resNum").classList.toggle("fail", n === 0);
+  let tag = "", cls = "";
+  if (n === 0) { tag = "Αποτυχία"; cls = "bad"; }
+  else if (p.sides === 10 && plan.th === 8 && n >= 5) { tag = "Exceptional success"; cls = "crit"; }
+  $("resTag").textContent = tag; $("resTag").className = "result-tag " + cls;
+  $("resBreak").innerHTML = poolBreak(plan, p);
+  return n;
+}
+
+function showOpposed(pa, pb, A, B){
+  const na = sideName(pa, "Πλευρά Α"), nb = sideName(pb, "Πλευρά Β");
+  const a = A.successes, b = B.successes;
+  $("resLabel").textContent = `${na} – ${nb}`;
+  $("resNum").textContent = `${a} – ${b}`;
+  $("resNum").classList.remove("fail");
+  let tag, cls;
+  if (a === b) { tag = a === 0 ? "Ισοπαλία · κανείς δεν πέτυχε" : "Ισοπαλία"; cls = "crit"; }
+  else { tag = `Κερδίζει: ${a > b ? na : nb} (+${Math.abs(a - b)})`; cls = "good"; }
+  $("resTag").textContent = tag; $("resTag").className = "result-tag " + cls;
+  const block = (name, n, plan, p, win) =>
+    `<div class="side-res${win ? " win" : ""}"><b>${esc(name)} · ${n} ${plural(n)}</b><div class="result-break">${poolBreak(plan, p)}</div></div>`;
+  $("resBreak").innerHTML = block(na, a, A, pa, a > b) + block(nb, b, B, pb, b > a);
+  return { a, b, winner: a === b ? null : (a > b ? na : nb) };
+}
+
+/* ---------- history ---------- */
+function addHistory(what, res){
+  const d = new Date();
+  const t = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  state.history.unshift({ t, what, res });
+  state.history = state.history.slice(0, 15);
+  renderHistory(); save();
+}
+function renderHistory(){
+  const ol = $("histList");
+  if (!state.history.length) { ol.innerHTML = `<li><p class="empty">Οι ζαριές σου θα εμφανίζονται εδώ.</p></li>`; return; }
+  ol.innerHTML = state.history.map(h => `<li><span class="h-what"><time>${esc(h.t)}</time>${esc(h.what)}</span><span class="h-res">${esc(h.res)}</span></li>`).join("");
+}
+function poolDesc(p, plan){
+  let s = `${p.count}d${p.sides} · ${plan.th}+`;
+  if (plan.ag) s += ` · ${plan.ag}-again`;
+  if (p.rote) s += " · rote";
+  return s;
+}
+
+/* ---------- roll ---------- */
+let rolling = false;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+async function resultOnly(n){
+  clack(.35); setTimeout(() => clack(.3), 60); setTimeout(() => clack(.2), 130);
+  tray.setMessage({ title:`${n} ζάρια`, sub:`Πάνω από ${ANIM_LIMIT} ζάρια · μόνο αποτέλεσμα` });
+  await sleep(260);
+}
+
+/* plays every wave of one or two pools; lane 0 left, lane 1 right */
+async function animatePools(list){
+  const maxW = Math.max(...list.map(x => x.plan.waves.length));
+  const perLane = [0, 0];
+  list.forEach(({ plan, lane }) => { perLane[lane] = plan.all.length; });
+  tray.setPlanned(perLane);
+  for (let w = 0; w < maxW; w++){
+    const specs = [];
+    list.forEach(({ plan, lane, setId }) => {
+      (plan.waves[w] || []).forEach(d => specs.push({
+        id:lane + "-" + d.id, sides:d.sides, value:d.value, lane, setId,
+        badge:d.origin === "again" ? "+" : d.origin === "rote" ? "R" : null
+      }));
+    });
+    await tray.play(specs, w > 0);
+    await tray.tidy();
+    list.forEach(({ plan, lane }) => {
+      (plan.waves[w] || []).forEach(d => {
+        const td = tray.byId(lane + "-" + d.id); if (!td) return;
+        if (d.value >= plan.th) { td.mark = "s"; td.dim = false; } else { td.mark = null; td.dim = true; }
+        if (w === 0 && d.rerolled) { td.mark = "x"; td.dim = true; }
+      });
+    });
+    tray.redraw();
+    if (w < maxW - 1) await sleep(reducedMotion ? 60 : 280);
+  }
+}
+
+async function roll(){
+  if (rolling) return;
+  ensureAudio();
+  askMotion();
+  if (state.mode === "sum") {
+    const n = Object.values(state.sum.counts).reduce((a, b) => a + b, 0);
+    if (!n) { toast("Πρόσθεσε τουλάχιστον ένα ζάρι."); return; }
+    rolling = true; $("rollBtn").disabled = true;
+    const dice = rollSum(state.sum.counts);
+    showPending();
+    tray.setLanes(1); tray.clear();
+    if (dice.length > ANIM_LIMIT) {
+      await resultOnly(dice.length);
+    } else {
+      tray.setPlanned([dice.length]);
+      await tray.play(dice.map(d => ({ id:d.id, sides:d.sides, value:d.value, setId:state.set })));
+      await tray.tidy();
+      dice.forEach(d => {
+        const td = tray.byId(d.id);
+        if (td && d.sides === 20) td.mark = d.value === 20 ? "c" : d.value === 1 ? "l" : null;
+      });
+      tray.redraw();
+    }
+    const o = showSum(dice, state.sum.mod);
+    buzz(o.tag ? [30, 60, 40] : 25);
+    addHistory(toNotation(state.sum.counts, state.sum.mod), String(o.total));
+  } else if (!state.opposed) {
+    const p = Object.assign({}, state.pool);
+    rolling = true; $("rollBtn").disabled = true;
+    const plan = planPool(p);
+    showPending();
+    tray.setLanes(1); tray.clear();
+    if (plan.all.length > ANIM_LIMIT) await resultOnly(plan.all.length);
+    else await animatePools([{ plan, lane:0, setId:state.set }]);
+    const n = showPool(plan, p);
+    buzz(n ? 25 : [20, 40, 20]);
+    addHistory(poolDesc(p, plan), `${n} ${plural(n)}`);
+  } else {
+    const pa = Object.assign({}, state.pool), pb = Object.assign({}, state.poolB);
+    rolling = true; $("rollBtn").disabled = true;
+    const A = planPool(pa), B = planPool(pb);
+    showPending();
+    tray.setLanes(2, [sideName(pa, "Πλευρά Α"), sideName(pb, "Πλευρά Β")]); tray.clear();
+    if (A.all.length + B.all.length > ANIM_LIMIT) await resultOnly(A.all.length + B.all.length);
+    else await animatePools([{ plan:A, lane:0, setId:state.set }, { plan:B, lane:1, setId:pb.set }]);
+    const r = showOpposed(pa, pb, A, B);
+    buzz(r.winner ? [25, 50, 25] : 40);
+    addHistory(`${sideName(pa, "Α")} ${pa.count}d${pa.sides} vs ${sideName(pb, "Β")} ${pb.count}d${pb.sides}`,
+               `${r.a}–${r.b}${r.winner ? " · " + r.winner : " · ισοπαλία"}`);
+  }
+  rolling = false; $("rollBtn").disabled = false;
+}
+
+/* ---------- shake ---------- */
+let motionSeen = false, motionAsked = false, lastShake = 0;
+function setShakeChip(){
+  const c = $("shakeChip");
+  if (motionSeen) { c.textContent = "Κούνα το κινητό για να ρίξεις"; c.classList.add("on"); }
+  else { c.textContent = "Κούνημα: μόνο στο εγκατεστημένο app"; c.classList.remove("on"); }
+}
+function onMotion(e){
+  const a = e.accelerationIncludingGravity || e.acceleration;
+  if (!a || a.x == null) return;
+  if (!motionSeen) { motionSeen = true; setShakeChip(); }
+  const m = Math.hypot(a.x || 0, a.y || 0, a.z || 0);
+  const t = performance.now();
+  if (m > 23 && t - lastShake > 1600 && !rolling && $("sheet").hidden) { lastShake = t; roll(); }
+}
+function askMotion(){
+  if (motionAsked) return; motionAsked = true;
+  try {
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+      DeviceMotionEvent.requestPermission().then(r => { if (r === "granted") window.addEventListener("devicemotion", onMotion); }).catch(() => {});
+    }
+  } catch (e) {}
+}
+try { window.addEventListener("devicemotion", onMotion); } catch (e) {}
+setTimeout(() => { if (!motionSeen) setShakeChip(); }, 1500);
+
+/* ---------- sound button ---------- */
+function syncSound(){
+  const b = $("soundBtn");
+  b.setAttribute("aria-pressed", String(state.sound));
+  b.setAttribute("aria-label", state.sound ? "Ήχος ενεργός" : "Ήχος κλειστός");
+  b.innerHTML = state.sound
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="#d6ad5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#d6ad5e"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="#85755f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#85755f"/><path d="M17 9l5 6M22 9l-5 6"/></svg>`;
+}
+
+/* ---------- set sheet ---------- */
+let sheetTarget = "main", sheetOpener = null;
+function buildSets(){
+  const g = $("setGrid"); g.innerHTML = "";
+  SETS.forEach(s => {
+    const b = document.createElement("button");
+    b.className = "set-card"; b.dataset.id = s.id;
+    b.innerHTML = `<canvas width="72" height="72" aria-hidden="true"></canvas><span>${esc(s.name)}</span>`;
+    b.addEventListener("click", () => {
+      if (sheetTarget === "b") state.poolB.set = s.id; else state.set = s.id;
+      save();
+      [...g.children].forEach(c => c.setAttribute("aria-pressed", String(c.dataset.id === s.id)));
+      drawIcons(); syncPool(); tray.redraw();
+    });
+    g.appendChild(b);
+  });
+}
+function openSheet(target, opener){
+  sheetTarget = target; sheetOpener = opener;
+  const current = target === "b" ? state.poolB.set : state.set;
+  $("sheetTitle").textContent = target === "b"
+    ? `Σετ ζαριών για: ${sideName(state.poolB, "Πλευρά Β")}`
+    : (state.mode === "pool" && state.opposed ? `Σετ ζαριών για: ${sideName(state.pool, "Πλευρά Α")}` : "Διάλεξε σετ ζαριών");
+  $("sheet").hidden = false;
+  [...$("setGrid").children].forEach((c, i) => {
+    c.setAttribute("aria-pressed", String(c.dataset.id === current));
+    drawIcon(c.querySelector("canvas"), 20, SETS[i], 20);
+  });
+  $("sheetClose").focus();
+}
+function closeSheet(){ $("sheet").hidden = true; (sheetOpener || $("setBtn")).focus(); }
+
+/* ---------- wiring ---------- */
+buildSumGrid(); buildPool(); buildSets();
+syncSum(); syncPool(); syncSound(); renderHistory(); setMode(state.mode);
+
+$("tabSum").addEventListener("click", () => setMode("sum"));
+$("tabPool").addEventListener("click", () => setMode("pool"));
+$("rollBtn").addEventListener("click", roll);
+$("tray").addEventListener("click", roll);
+$("soundBtn").addEventListener("click", () => { state.sound = !state.sound; if (state.sound) ensureAudio(); syncSound(); save(); });
+$("modMinus").addEventListener("click", () => { state.sum.mod = Math.max(-999, state.sum.mod - 1); syncSum(); save(); });
+$("modPlus").addEventListener("click", () => { state.sum.mod = Math.min(999, state.sum.mod + 1); syncSum(); save(); });
+$("clearSum").addEventListener("click", () => { state.sum.counts = {}; state.sum.mod = 0; syncSum(); save(); });
+
+$("cntMinus").addEventListener("click", () => { P().count = Math.max(1, P().count - 1); syncPool(); save(); });
+$("cntPlus").addEventListener("click", () => { P().count = Math.min(MAX_DICE, P().count + 1); syncPool(); save(); });
+$("cntVal").addEventListener("input", e => {
+  const v = parseInt(e.target.value, 10);
+  if (v >= 1) { P().count = Math.min(MAX_DICE, v); if (state.opposed) syncSideSeg(); save(); }
+});
+$("cntVal").addEventListener("change", () => { syncPool(); });
+$("cntVal").addEventListener("blur", () => { $("cntVal").value = P().count; });
+$("cntVal").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+$("thMinus").addEventListener("click", () => { P().th = Math.max(2, P().th - 1); syncPool(); save(); });
+$("thPlus").addEventListener("click", () => { P().th = Math.min(P().sides, P().th + 1); syncPool(); save(); });
+$("rote").addEventListener("change", e => { P().rote = e.target.checked; save(); });
+
+$("opposed").addEventListener("change", e => {
+  state.opposed = e.target.checked;
+  if (!state.opposed) state.editSide = "a";
+  syncPool(); save();
+});
+[...$("sideSeg").children].forEach(b => b.addEventListener("click", () => {
+  state.editSide = b.dataset.side; syncPool(); save();
+}));
+$("sideName").addEventListener("input", e => { P().name = e.target.value.slice(0, 20); syncSideSeg(); save(); });
+$("sideName").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+$("sideSetBtn").addEventListener("click", () => openSheet(state.editSide === "b" ? "b" : "main", $("sideSetBtn")));
+
+$("clearHist").addEventListener("click", () => { state.history = []; renderHistory(); save(); });
+
+function applyNotation(){
+  const r = parseNotation($("notation").value);
+  if (!r) {
+    $("notErr").textContent = "Δεν κατάλαβα τη ζαριά. Γράψε π.χ. 1d20+3d8+2 (ζάρια d4, d6, d8, d10, d12, d20, d100, έως 999 από το καθένα).";
+    $("notErr").hidden = false; return false;
+  }
+  state.sum.counts = r.counts; state.sum.mod = r.mod;
+  $("notation").blur();
+  syncSum(); save(); return true;
+}
+$("notation").addEventListener("change", applyNotation);
+$("notation").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); applyNotation(); } });
+
+$("setBtn").addEventListener("click", () => openSheet("main", $("setBtn")));
+$("sheetClose").addEventListener("click", closeSheet);
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet")) closeSheet(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+
+/* ---------- first frame: an example roll already on the table ---------- */
+function firstFrame(){
+  tray.resize();
+  drawIcons();
+  if (state.mode === "sum" && Object.keys(state.sum.counts).length) {
+    const dice = rollSum(state.sum.counts);
+    if (dice.length > ANIM_LIMIT) { tray.setLanes(1); tray.setMessage({ title:`${dice.length} ζάρια`, sub:"Πάτα «Ρίξε»" }); return; }
+    tray.setLanes(1);
+    tray.place(dice.map(d => ({ id:d.id, sides:d.sides, value:d.value, setId:state.set })));
+    showSum(dice, state.sum.mod);
+    $("resLabel").textContent = "Παράδειγμα ζαριάς";
+  } else if (state.mode === "pool") {
+    const sides = state.opposed ? [[state.pool, state.set, 0], [state.poolB, state.poolB.set, 1]] : [[state.pool, state.set, 0]];
+    tray.setLanes(sides.length, state.opposed ? [sideName(state.pool, "Πλευρά Α"), sideName(state.poolB, "Πλευρά Β")] : []);
+    const specs = [];
+    sides.forEach(([p, setId, lane]) => {
+      const plan = planPool(Object.assign({}, p, { rote:false, again:0, count:Math.min(p.count, 12) }));
+      plan.waves[0].forEach(d => specs.push({ id:lane + "-" + d.id, sides:d.sides, value:d.value, lane, setId, mark:d.value >= plan.th ? "s" : null, dim:d.value < plan.th }));
+    });
+    tray.place(specs);
+    $("resLabel").textContent = "Πάτα «Ρίξε»";
+    $("resNum").textContent = "–";
+  }
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawIcons(); syncPool(); tray.redraw(); });
+firstFrame();
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+</body>
+</html>
